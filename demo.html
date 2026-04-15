@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SynapLink — Brain-to-Code System</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg2: #0f1528;
+  --bg3: #141c35;
+  --border: rgba(99,132,255,0.15);
+  --border2: rgba(99,132,255,0.3);
+  --accent: #6384ff;
+  --accent2: #38e8c0;
+  --accent3: #ff6b6b;
+  --text: #e8eaf6;
+  --text2: #8892b0;
+  --text3: #4a5568;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --code-green: #38e8c0;
+  --code-blue: #82aaff;
+  --code-yellow: #ffcb6b;
+  --code-pink: #f78c6c;
+  --code-purple: #c792ea;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── TOPBAR ── */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(10,14,26,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border);
+  padding: 0 2rem;
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; }
+.logo span { color: var(--accent2); }
+.nav { display: flex; gap: 4px; }
+.nav-btn {
+  font-family: var(--mono); font-size: 11px; padding: 5px 14px;
+  border: 0.5px solid var(--border); border-radius: 4px;
+  background: transparent; color: var(--text2); cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.04em;
+}
+.nav-btn:hover, .nav-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(99,132,255,0.06); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.topbar-right { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 10px; color: var(--text2); }
+
+/* ── SECTIONS ── */
+.section { display: none; padding-top: 52px; min-height: 100vh; }
+.section.active { display: block; }
+
+/* ── HERO ── */
+.hero {
+  min-height: calc(100vh - 52px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 3rem 2rem;
+  position: relative; overflow: hidden;
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(99,132,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,132,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+.hero-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  padding: 5px 16px; border: 0.5px solid var(--border2);
+  border-radius: 20px; color: var(--accent2); margin-bottom: 2rem;
+  display: inline-block;
+}
+.hero h1 {
+  font-family: var(--mono); font-size: clamp(2rem, 6vw, 4.5rem);
+  font-weight: 700; line-height: 1.1; margin-bottom: 0.5rem;
+  color: var(--text);
+}
+.hero h1 .hl { color: var(--accent); }
+.hero h1 .hl2 { color: var(--accent2); }
+.hero-sub {
+  font-size: 14px; color: var(--text2); max-width: 560px;
+  margin: 1.5rem auto 2.5rem; line-height: 1.8;
+}
+.hero-stats {
+  display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+.hero-stat { text-align: center; }
+.hero-stat-val { font-family: var(--mono); font-size: 2rem; font-weight: 700; color: var(--accent); }
+.hero-stat-label { font-size: 11px; color: var(--text2); letter-spacing: 0.06em; }
+.cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  font-family: var(--mono); font-size: 12px; padding: 10px 28px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 6px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em;
+}
+.btn-primary:hover { background: #7a98ff; transform: translateY(-1px); }
+.btn-outline {
+  font-family: var(--mono); font-size: 12px; padding: 10px 28px;
+  background: transparent; color: var(--accent); border: 0.5px solid var(--accent);
+  border-radius: 6px; cursor: pointer; transition: all 0.2s;
+}
+.btn-outline:hover { background: rgba(99,132,255,0.1); }
+.scroll-hint { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; color: var(--text3); animation: bounce 2s infinite; }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(6px);} }
+
+/* ── PIPELINE DEMO ── */
+.demo-wrap { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+.section-header { margin-bottom: 2rem; }
+.section-header h2 { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.section-header p { font-size: 13px; color: var(--text2); }
+
+.intent-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px; margin-bottom: 2rem;
+}
+.intent-card {
+  border: 0.5px solid var(--border); border-radius: 8px; padding: 10px 14px;
+  cursor: pointer; transition: all 0.2s; background: var(--bg2);
+  position: relative; overflow: hidden;
+}
+.intent-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; opacity:0; transition:opacity 0.2s; }
+.intent-card.code-type::before { background: var(--accent); }
+.intent-card.text-type::before { background: var(--accent2); }
+.intent-card.img-type::before { background: var(--accent3); }
+.intent-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.intent-card.selected { border-color: var(--accent); background: rgba(99,132,255,0.08); }
+.intent-card.selected::before { opacity: 1; }
+.intent-card.text-type.selected { border-color: var(--accent2); background: rgba(56,232,192,0.06); }
+.intent-card.img-type.selected { border-color: var(--accent3); background: rgba(255,107,107,0.06); }
+.intent-type-tag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; margin-bottom: 4px; }
+.code-type .intent-type-tag { color: var(--accent); }
+.text-type .intent-type-tag { color: var(--accent2); }
+.img-type .intent-type-tag { color: var(--accent3); }
+.intent-name { font-size: 12px; color: var(--text); font-weight: 500; }
+
+.run-pipeline-btn {
+  width: 100%; padding: 14px; font-family: var(--mono); font-size: 13px;
+  font-weight: 700; letter-spacing: 0.06em;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  margin-bottom: 2rem;
+}
+.run-pipeline-btn:hover:not(:disabled) { background: #7a98ff; }
+.run-pipeline-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── PIPELINE STEPS ── */
+.pipeline-steps {
+  display: grid; grid-template-columns: repeat(6,1fr); gap: 0;
+  margin-bottom: 1rem; border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden;
+}
+.pipe-step {
+  padding: 14px 8px; text-align: center;
+  border-right: 0.5px solid var(--border);
+  transition: all 0.3s; background: var(--bg2);
+  position: relative;
+}
+.pipe-step:last-child { border-right: none; }
+.pipe-step.active { background: rgba(99,132,255,0.1); }
+.pipe-step.done { background: rgba(56,232,192,0.06); }
+.pipe-step-num { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-bottom: 6px; }
+.pipe-step.active .pipe-step-num { color: var(--accent); }
+.pipe-step.done .pipe-step-num { color: var(--accent2); }
+.pipe-step-icon { font-size: 18px; margin-bottom: 5px; display: block; line-height: 1; }
+.pipe-step-name { font-family: var(--mono); font-size: 9px; color: var(--text2); letter-spacing: 0.04em; }
+.pipe-step.active .pipe-step-name { color: var(--text); }
+
+.progress-bar { height: 3px; background: var(--bg3); border-radius: 2px; margin-bottom: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.15s linear; border-radius: 2px; }
+.pipe-status-txt { font-family: var(--mono); font-size: 11px; color: var(--text2); min-height: 20px; margin-bottom: 2rem; }
+
+/* ── SIGNAL DISPLAY ── */
+.signal-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 2rem; }
+.signal-card {
+  border: 0.5px solid var(--border); border-radius: 8px; padding: 12px;
+  background: var(--bg2);
+}
+.signal-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.signal-name { font-family: var(--mono); font-size: 10px; color: var(--text2); }
+.signal-val { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+.signal-canvas { width: 100%; height: 36px; display: block; }
+.signal-band { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 5px; }
+
+/* ── CLASSIFICATION ── */
+.class-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 2rem; }
+.class-card {
+  border: 0.5px solid var(--border); border-radius: 8px; padding: 16px;
+  background: var(--bg2); transition: border-color 0.3s;
+}
+.class-card.l1-done { border-color: rgba(99,132,255,0.4); }
+.class-card.l2-done { border-color: rgba(56,232,192,0.4); }
+.class-card.l3-done { border-color: rgba(255,107,107,0.4); }
+.class-level { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; margin-bottom: 8px; color: var(--text3); }
+.class-result { font-family: var(--mono); font-size: 14px; font-weight: 700; min-height: 22px; margin-bottom: 10px; }
+.class-card.l1-done .class-result { color: var(--accent); }
+.class-card.l2-done .class-result { color: var(--accent2); }
+.class-card.l3-done .class-result { color: var(--accent3); }
+.conf-track { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+.conf-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.8s cubic-bezier(.34,1.56,.64,1); }
+.l1-done .conf-bar-fill { background: var(--accent); }
+.l2-done .conf-bar-fill { background: var(--accent2); }
+.l3-done .conf-bar-fill { background: var(--accent3); }
+.conf-label { font-family: var(--mono); font-size: 10px; color: var(--text2); }
+
+/* ── CODE OUTPUT ── */
+.output-panel {
+  border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden;
+  margin-bottom: 2rem;
+}
+.output-toolbar {
+  background: var(--bg3); padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 0.5px solid var(--border);
+}
+.toolbar-dots { display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.toolbar-title { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+.toolbar-latency { font-family: var(--mono); font-size: 11px; color: var(--accent2); }
+.code-body {
+  background: var(--bg2); padding: 20px; min-height: 140px;
+  font-family: var(--mono); font-size: 13px; line-height: 1.8;
+  white-space: pre; overflow-x: auto; color: var(--text);
+}
+.cursor { display: inline-block; width: 2px; height: 15px; background: var(--accent); animation: blink2 1s infinite; vertical-align: text-bottom; }
+@keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+/* ── EEG BRAIN VIZ ── */
+.brain-section { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+.brain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.brain-map-wrap {
+  border: 0.5px solid var(--border); border-radius: 10px;
+  background: var(--bg2); padding: 1.5rem;
+}
+.brain-map-title { font-family: var(--mono); font-size: 12px; color: var(--text2); margin-bottom: 1rem; }
+.brain-svg-wrap { text-align: center; }
+.channel-info-list { display: flex; flex-direction: column; gap: 8px; }
+.ch-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border: 0.5px solid var(--border);
+  border-radius: 6px; background: var(--bg3);
+}
+.ch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.ch-name { font-family: var(--mono); font-size: 12px; color: var(--text); min-width: 30px; font-weight: 700; }
+.ch-desc { font-size: 11px; color: var(--text2); flex: 1; }
+.ch-val { font-family: var(--mono); font-size: 11px; font-weight: 700; min-width: 50px; text-align: right; }
+
+/* ── ARCHITECTURE PAGE ── */
+.arch-section { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+.arch-flow { display: grid; gap: 12px; margin-bottom: 2rem; }
+.arch-layer {
+  border: 0.5px solid var(--border); border-radius: 8px;
+  background: var(--bg2); overflow: hidden;
+}
+.arch-layer-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 0.5px solid var(--border);
+  background: var(--bg3);
+}
+.arch-layer-num { font-family: var(--mono); font-size: 10px; color: var(--text3); min-width: 20px; }
+.arch-layer-name { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); }
+.arch-layer-tag { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 3px; margin-left: auto; }
+.tag-hw { background: rgba(255,107,107,0.15); color: var(--accent3); }
+.tag-ml { background: rgba(99,132,255,0.15); color: var(--accent); }
+.tag-ai { background: rgba(56,232,192,0.15); color: var(--accent2); }
+.arch-layer-body { padding: 12px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.arch-chip {
+  font-family: var(--mono); font-size: 11px; padding: 5px 12px;
+  border: 0.5px solid var(--border); border-radius: 4px;
+  color: var(--text2); background: var(--bg);
+}
+.arch-arrow { text-align: center; color: var(--text3); font-size: 16px; line-height: 1; }
+
+/* ── ABOUT PAGE ── */
+.about-section { padding: 2rem; max-width: 900px; margin: 0 auto; }
+.about-card {
+  border: 0.5px solid var(--border); border-radius: 10px;
+  background: var(--bg2); padding: 1.5rem; margin-bottom: 1rem;
+}
+.about-card h3 { font-family: var(--mono); font-size: 14px; color: var(--accent); margin-bottom: 8px; }
+.about-card p, .about-card li { font-size: 13px; color: var(--text2); line-height: 1.8; }
+.about-card ul { padding-left: 1.2rem; }
+.metric-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 1rem; }
+.metric { text-align: center; padding: 12px; background: var(--bg3); border-radius: 6px; }
+.metric-val { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+.metric-label { font-size: 10px; color: var(--text2); }
+
+/* ── MOBILE ── */
+@media(max-width:640px){
+  .intent-grid { grid-template-columns: repeat(3,1fr); }
+  .signal-row { grid-template-columns: repeat(2,1fr); }
+  .class-grid { grid-template-columns: 1fr; }
+  .pipeline-steps { grid-template-columns: repeat(3,1fr); }
+  .brain-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 2rem; }
+  .hero-stats { gap: 1rem; }
+  .nav-btn { font-size: 9px; padding: 4px 8px; }
+  .metric-row { grid-template-columns: repeat(3,1fr); }
+}
+
+/* syntax colors */
+.kw { color: var(--code-purple); }
+.fn { color: var(--code-blue); }
+.st { color: var(--code-yellow); }
+.cm { color: #546e7a; font-style: italic; }
+.nm { color: var(--code-pink); }
+.op { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="logo">Synap<span>Link</span></div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showSection('home',this)">home</button>
+    <button class="nav-btn" onclick="showSection('demo',this)">pipeline demo</button>
+    <button class="nav-btn" onclick="showSection('eeg',this)">eeg signals</button>
+    <button class="nav-btn" onclick="showSection('arch',this)">architecture</button>
+    <button class="nav-btn" onclick="showSection('about',this)">about</button>
+  </div>
+  <div class="topbar-right">
+    <div class="status-dot"></div>
+    <span>system ready</span>
+  </div>
+</nav>
+
+<!-- ══════════ HOME ══════════ -->
+<section class="section active" id="sec-home">
+  <div class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-badge">KARE B.TECH CSE (AI/ML) · CAPSTONE PROJECT · IEEE ICIRCA-2025</div>
+    <h1>
+      <span class="hl">Brain</span>-to-<span class="hl2">Code</span><br>
+      Interface System
+    </h1>
+    <p class="hero-sub">
+      Think a thought. Watch code appear.<br>
+      SynapLink decodes cognitive intent from non-invasive EEG signals and generates executable code — no keyboard, no voice, no hand movement required.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val">99.99%</div>
+        <div class="hero-stat-label">L1 accuracy</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">37,800</div>
+        <div class="hero-stat-label">training samples</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">42</div>
+        <div class="hero-stat-label">intent classes</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">1.21s</div>
+        <div class="hero-stat-label">end-to-end latency</div>
+      </div>
+    </div>
+    <div class="cta-row">
+      <button class="btn-primary" onclick="showSection('demo',document.querySelector('.nav-btn:nth-child(2)'))">Run Live Demo</button>
+      <button class="btn-outline" onclick="showSection('arch',document.querySelector('.nav-btn:nth-child(4)'))">View Architecture</button>
+    </div>
+    <div class="scroll-hint">↓ scroll to explore</div>
+  </div>
+</section>
+
+<!-- ══════════ DEMO ══════════ -->
+<section class="section" id="sec-demo">
+  <div class="demo-wrap">
+    <div class="section-header">
+      <h2>pipeline demo</h2>
+      <p>Select an intent below, then run the full brain-to-code pipeline end-to-end</p>
+    </div>
+
+    <!-- Intent Selector -->
+    <div class="intent-grid" id="intentGrid"></div>
+
+    <button class="run-pipeline-btn" id="runBtn" onclick="runPipeline()">
+      ▶ RUN FULL PIPELINE
+    </button>
+
+    <!-- Pipeline Steps -->
+    <div class="pipeline-steps" id="pipeSteps"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+    <div class="pipe-status-txt" id="pipeStatus">Select an intent above and click Run</div>
+
+    <!-- Live Signal Display -->
+    <div class="signal-row" id="signalRow"></div>
+
+    <!-- Classification Results -->
+    <div class="class-grid">
+      <div class="class-card" id="cc1">
+        <div class="class-level">LEVEL 1 — DOMAIN CLASSIFIER</div>
+        <div class="class-result" id="cr1">—</div>
+        <div class="conf-track"><div class="conf-bar-fill" id="cf1"></div></div>
+        <div class="conf-label" id="cl1">awaiting signal</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;">CODE vs TEXT vs IMAGE</div>
+      </div>
+      <div class="class-card" id="cc2">
+        <div class="class-level">LEVEL 2 — CATEGORY CLASSIFIER</div>
+        <div class="class-result" id="cr2">—</div>
+        <div class="conf-track"><div class="conf-bar-fill" id="cf2"></div></div>
+        <div class="conf-label" id="cl2">awaiting L1</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;">14 subcategories</div>
+      </div>
+      <div class="class-card" id="cc3">
+        <div class="class-level">LEVEL 3 — INTENT CLASSIFIER</div>
+        <div class="class-result" id="cr3">—</div>
+        <div class="conf-track"><div class="conf-bar-fill" id="cf3"></div></div>
+        <div class="conf-label" id="cl3">awaiting L2</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;">42 specific intents</div>
+      </div>
+    </div>
+
+    <!-- Code Output -->
+    <div class="output-panel">
+      <div class="output-toolbar">
+        <div class="toolbar-dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <div class="toolbar-title" id="outTitle">synaplink_output.py — waiting</div>
+        <div class="toolbar-latency" id="outLatency"></div>
+      </div>
+      <div class="code-body" id="codeBody"><span class="cm"># SynapLink output will appear here
+# Select an intent and run the pipeline</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ EEG SIGNALS ══════════ -->
+<section class="section" id="sec-eeg">
+  <div class="brain-section">
+    <div class="section-header">
+      <h2>eeg signal analysis</h2>
+      <p>How raw brain electrical signals are captured, cleaned, and interpreted as cognitive intents</p>
+    </div>
+    <div class="brain-grid">
+      <div class="brain-map-wrap">
+        <div class="brain-map-title">10-20 electrode placement — 8 channels</div>
+        <div class="brain-svg-wrap">
+          <svg width="280" height="280" viewBox="0 0 280 280">
+            <ellipse cx="140" cy="130" rx="115" ry="110" fill="none" stroke="rgba(99,132,255,0.2)" stroke-width="1"/>
+            <ellipse cx="140" cy="130" rx="85" ry="80" fill="none" stroke="rgba(99,132,255,0.1)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="140" y1="20" x2="140" y2="240" stroke="rgba(99,132,255,0.1)" stroke-width="0.5"/>
+            <line x1="25" y1="130" x2="255" y2="130" stroke="rgba(99,132,255,0.1)" stroke-width="0.5"/>
+            <!-- Electrodes -->
+            <g id="electrodes">
+              <!-- F3 -->
+              <circle cx="95" cy="75" r="12" fill="rgba(99,132,255,0.2)" stroke="#6384ff" stroke-width="1.5" class="elec" id="e-F3"/>
+              <text x="95" y="79" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#6384ff" font-weight="700">F3</text>
+              <!-- F4 -->
+              <circle cx="185" cy="75" r="12" fill="rgba(99,132,255,0.2)" stroke="#6384ff" stroke-width="1.5"/>
+              <text x="185" y="79" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#6384ff" font-weight="700">F4</text>
+              <!-- Fz -->
+              <circle cx="140" cy="60" r="12" fill="rgba(99,132,255,0.15)" stroke="#6384ff" stroke-width="1"/>
+              <text x="140" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#6384ff">Fz</text>
+              <!-- C3 -->
+              <circle cx="75" cy="130" r="12" fill="rgba(56,232,192,0.15)" stroke="#38e8c0" stroke-width="1.5"/>
+              <text x="75" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#38e8c0" font-weight="700">C3</text>
+              <!-- C4 -->
+              <circle cx="205" cy="130" r="12" fill="rgba(56,232,192,0.15)" stroke="#38e8c0" stroke-width="1.5"/>
+              <text x="205" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#38e8c0" font-weight="700">C4</text>
+              <!-- T7 -->
+              <circle cx="35" cy="130" r="12" fill="rgba(255,107,107,0.15)" stroke="#ff6b6b" stroke-width="1.5"/>
+              <text x="35" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff6b6b" font-weight="700">T7</text>
+              <!-- T8 -->
+              <circle cx="245" cy="130" r="12" fill="rgba(255,107,107,0.15)" stroke="#ff6b6b" stroke-width="1.5"/>
+              <text x="245" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ff6b6b" font-weight="700">T8</text>
+              <!-- Pz -->
+              <circle cx="140" cy="195" r="12" fill="rgba(199,146,234,0.15)" stroke="#c792ea" stroke-width="1.5"/>
+              <text x="140" y="199" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#c792ea" font-weight="700">Pz</text>
+            </g>
+            <text x="140" y="258" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(99,132,255,0.4)">ADS1299EEG-FE · 250Hz · 24-bit</text>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <div class="channel-info-list">
+          <div class="ch-item">
+            <div class="ch-dot" style="background:#6384ff;"></div>
+            <div class="ch-name">F3 F4</div>
+            <div class="ch-desc">Frontal lobe — active during coding, mathematical reasoning, working memory</div>
+            <div class="ch-val" style="color:#6384ff;">beta ↑</div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-dot" style="background:#38e8c0;"></div>
+            <div class="ch-name">C3 C4</div>
+            <div class="ch-desc">Central — motor planning, sequential thinking, loop/iteration patterns</div>
+            <div class="ch-val" style="color:#38e8c0;">beta ↑</div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-dot" style="background:#ff6b6b;"></div>
+            <div class="ch-name">T7 T8</div>
+            <div class="ch-desc">Temporal — language, writing, email drafting, translation intents</div>
+            <div class="ch-val" style="color:#ff6b6b;">alpha ↑</div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-dot" style="background:#c792ea;"></div>
+            <div class="ch-name">Pz Fz</div>
+            <div class="ch-desc">Parietal/Frontal midline — attention, visual imagery, image generation</div>
+            <div class="ch-val" style="color:#c792ea;">theta ↑</div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;border:0.5px solid var(--border);border-radius:8px;padding:1rem;background:var(--bg2);">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:12px;">live channel signal preview</div>
+          <canvas id="liveWave" width="340" height="80" style="width:100%;"></canvas>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;">8-channel multiplexed · Butterworth bandpass 0.5–50Hz · ICA artifact removal</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;border:0.5px solid var(--border);border-radius:8px;background:var(--bg2);overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:0.5px solid var(--border);background:var(--bg3);font-family:var(--mono);font-size:11px;color:var(--text2);">frequency band breakdown — what each wave means</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;">
+        <div style="padding:14px;border-right:0.5px solid var(--border);text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:#6384ff;margin-bottom:4px;">δ</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">0.5–4 Hz</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Delta</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">deep rest state</div>
+        </div>
+        <div style="padding:14px;border-right:0.5px solid var(--border);text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:#38e8c0;margin-bottom:4px;">θ</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">4–8 Hz</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Theta</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">memory, recall</div>
+        </div>
+        <div style="padding:14px;border-right:0.5px solid var(--border);text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:#c792ea;margin-bottom:4px;">α</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">8–13 Hz</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Alpha</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">relaxed, visual</div>
+        </div>
+        <div style="padding:14px;border-right:0.5px solid var(--border);text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:#ff6b6b;margin-bottom:4px;">β</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">13–30 Hz</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Beta</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">active coding</div>
+        </div>
+        <div style="padding:14px;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:#ffcb6b;margin-bottom:4px;">γ</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">30–100 Hz</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Gamma</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">concentration</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ARCHITECTURE ══════════ -->
+<section class="section" id="sec-arch">
+  <div class="arch-section">
+    <div class="section-header">
+      <h2>system architecture</h2>
+      <p>Complete hardware and software stack — from scalp electrodes to VS Code output</p>
+    </div>
+    <div class="arch-flow" id="archFlow"></div>
+    <div style="border:0.5px solid var(--border);border-radius:8px;padding:1.5rem;background:var(--bg2);">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--accent);margin-bottom:1rem;">scientific novelty — session-invariant features</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">5 novel band-power ratio features:</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-family:var(--mono);font-size:11px;padding:6px 10px;border:0.5px solid var(--border);border-radius:4px;color:var(--accent2);">θ/α ratio — memory vs relaxation</div>
+            <div style="font-family:var(--mono);font-size:11px;padding:6px 10px;border:0.5px solid var(--border);border-radius:4px;color:var(--accent2);">β/γ ratio — active thinking balance</div>
+            <div style="font-family:var(--mono);font-size:11px;padding:6px 10px;border:0.5px solid var(--border);border-radius:4px;color:var(--accent2);">θ/β ratio — recall vs concentration</div>
+            <div style="font-family:var(--mono);font-size:11px;padding:6px 10px;border:0.5px solid var(--border);border-radius:4px;color:var(--accent2);">θ phase coupling</div>
+            <div style="font-family:var(--mono);font-size:11px;padding:6px 10px;border:0.5px solid var(--border);border-radius:4px;color:var(--accent2);">hemispheric asymmetry index</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">cross-session stability:</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);line-height:1.8;">
+            Raw features CV: ~18%<br>
+            Ratio features CV: ~0.3%<br><br>
+            Ratios cancel session drift algebraically — same pattern every day regardless of mood, fatigue, or baseline shift.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ABOUT ══════════ -->
+<section class="section" id="sec-about">
+  <div class="about-section">
+    <div class="section-header">
+      <h2>about synaplink</h2>
+      <p>Project details, team, and research outcomes</p>
+    </div>
+    <div class="about-card">
+      <h3>project overview</h3>
+      <p>SynapLink is a Brain-Computer Interface (BCI) system that converts cognitive intent from non-invasive EEG signals directly into executable code, text, and image generation prompts — without any motor input, voice, or keyboard interaction.</p>
+    </div>
+    <div class="about-card">
+      <h3>team</h3>
+      <ul>
+        <li>Padala Durga Prasadu — Team Lead & Principal Developer (Reg: 9921004520)</li>
+        <li>P. Anitha — Project Guide</li>
+        <li>Kalairasi — Faculty Advisor</li>
+        <li>Dr. P. Deepalakshmi — Dean, KARE</li>
+      </ul>
+    </div>
+    <div class="about-card">
+      <h3>model performance</h3>
+      <div class="metric-row">
+        <div class="metric"><div class="metric-val">99.99%</div><div class="metric-label">L1 domain accuracy</div></div>
+        <div class="metric"><div class="metric-val">73.54%</div><div class="metric-label">L2 category accuracy</div></div>
+        <div class="metric"><div class="metric-val">61.06%</div><div class="metric-label">L3 intent accuracy</div></div>
+      </div>
+    </div>
+    <div class="about-card">
+      <h3>hardware design</h3>
+      <ul>
+        <li>ADS1299EEG-FE — 8-channel 24-bit EEG amplifier (0.5mW — zero heat)</li>
+        <li>ESP32-WROOM-32E — BLE 5.0 wireless transmission</li>
+        <li>Dry Ag/AgCl electrodes — no gel, no skin irritation</li>
+        <li>3D-printed flexible TPU frame — 180g total weight</li>
+        <li>500mAh LiPo battery — 8 hours runtime</li>
+      </ul>
+    </div>
+    <div class="about-card">
+      <h3>publication</h3>
+      <p>IEEE ICIRCA-2025 — "SynapLink: Hierarchical Cognitive Intent Classification from Non-Invasive EEG for Brain-to-Code Generation"</p>
+    </div>
+    <div class="about-card">
+      <h3>next steps — IIT Palakkad BCI Lab</h3>
+      <ul>
+        <li>Real EEG data collection with clinical-grade headset</li>
+        <li>Cross-subject validation across 50+ participants</li>
+        <li>EEGNet deep learning model integration</li>
+        <li>Live VS Code WebSocket code injection pipeline</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+const INTENTS = [
+  {id:'HW', label:'hello world', l1:'CODE', l2:'PRINT_STMT', l3:'HELLO_WORLD', c1:100, c2:98, c3:100, type:'code-type',
+   sig:{beta:4.31,alpha:1.0,theta:1.35,gamma:2.68},
+   code:`<span class="fn">print</span>(<span class="st">"Hello, World!"</span>)\n\n<span class="cm"># Output:</span>\n<span class="cm"># Hello, World!</span>`},
+  {id:'IE', label:'if else', l1:'CODE', l2:'CONDITIONAL', l3:'IF_ELSE', c1:100, c2:79, c3:66, type:'code-type',
+   sig:{beta:3.73,alpha:1.29,theta:1.44,gamma:2.51},
+   code:`<span class="nm">age</span> <span class="op">=</span> <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Enter age: "</span>))\n<span class="kw">if</span> age <span class="op">&gt;=</span> <span class="nm">18</span>:\n    <span class="fn">print</span>(<span class="st">"Adult"</span>)\n<span class="kw">else</span>:\n    <span class="fn">print</span>(<span class="st">"Minor"</span>)`},
+  {id:'FR', label:'for loop', l1:'CODE', l2:'LOOP', l3:'FOR_RANGE', c1:100, c2:86, c3:66, type:'code-type',
+   sig:{beta:3.71,alpha:1.30,theta:1.43,gamma:2.50},
+   code:`<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>, <span class="nm">6</span>):\n    <span class="fn">print</span>(<span class="st">f"Step </span><span class="op">{</span>i<span class="op">}</span><span class="st">: processing..."</span>)\n\n<span class="cm"># Output: Step 1: processing...</span>`},
+  {id:'FB', label:'fibonacci', l1:'CODE', l2:'FUNCTION_DEF', l3:'FIBONACCI', c1:100, c2:77, c3:57, type:'code-type',
+   sig:{beta:3.92,alpha:1.11,theta:1.56,gamma:2.65},
+   code:`<span class="kw">def</span> <span class="fn">fibonacci</span>(n):\n    a, b <span class="op">=</span> <span class="nm">0</span>, <span class="nm">1</span>\n    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n):\n        <span class="fn">print</span>(a, end<span class="op">=</span><span class="st">" "</span>)\n        a, b <span class="op">=</span> b, a <span class="op">+</span> b\n\n<span class="fn">fibonacci</span>(<span class="nm">8</span>)\n<span class="cm"># Output: 0 1 1 2 3 5 8 13</span>`},
+  {id:'BS', label:'bubble sort', l1:'CODE', l2:'ALGORITHM', l3:'BUBBLE_SORT', c1:100, c2:94, c3:86, type:'code-type',
+   sig:{beta:4.52,alpha:0.64,theta:1.94,gamma:3.06},
+   code:`<span class="kw">def</span> <span class="fn">bubble_sort</span>(arr):\n    n <span class="op">=</span> <span class="fn">len</span>(arr)\n    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):\n        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n<span class="op">-</span>i<span class="op">-</span><span class="nm">1</span>):\n            <span class="kw">if</span> arr[j] <span class="op">&gt;</span> arr[j<span class="op">+</span><span class="nm">1</span>]:\n                arr[j], arr[j<span class="op">+</span><span class="nm">1</span>] <span class="op">=</span> arr[j<span class="op">+</span><span class="nm">1</span>], arr[j]\n    <span class="kw">return</span> arr\n\n<span class="fn">print</span>(<span class="fn">bubble_sort</span>([<span class="nm">64</span>,<span class="nm">34</span>,<span class="nm">25</span>,<span class="nm">12</span>,<span class="nm">22</span>]))\n<span class="cm"># Output: [12, 22, 25, 34, 64]</span>`},
+  {id:'SC', label:'simple class', l1:'CODE', l2:'CLASS_DEF', l3:'SIMPLE_CLASS', c1:100, c2:86, c3:67, type:'code-type',
+   sig:{beta:4.31,alpha:0.80,theta:1.82,gamma:2.89},
+   code:`<span class="kw">class</span> <span class="fn">Student</span>:\n    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, name, roll):\n        <span class="nm">self</span>.name <span class="op">=</span> name\n        <span class="nm">self</span>.roll <span class="op">=</span> roll\n    <span class="kw">def</span> <span class="fn">display</span>(<span class="nm">self</span>):\n        <span class="kw">return</span> <span class="st">f"Name: </span><span class="op">{</span><span class="nm">self</span>.name<span class="op">}</span><span class="st">, Roll: </span><span class="op">{</span><span class="nm">self</span>.roll<span class="op">}</span><span class="st">"\span>\n\ns <span class="op">=</span> <span class="fn">Student</span>(<span class="st">"Durga"</span>, <span class="nm">9921004520</span>)\n<span class="fn">print</span>(s.<span class="fn">display</span>())`},
+  {id:'EM', label:'email draft', l1:'TEXT', l2:'COMPOSE', l3:'EMAIL_DRAFT', c1:100, c2:77, c3:78, type:'text-type',
+   sig:{beta:2.83,alpha:2.12,theta:2.01,gamma:2.00},
+   code:`<span class="cm"># TEXT GENERATION — Email Draft</span>\n<span class="cm"># Intent: EMAIL_DRAFT → sent to LLM</span>\n\nSubject: Regarding SynapLink BCI Project\n\nDear Prof. Vinod A Prasad,\n\nI hope this email finds you well. I am\nDurga Prasadu, final year B.Tech CSE (AI/ML)\nstudent at KARE. I would like to request\na trial at the IIT Palakkad BCI Lab.\n\nBest regards,\nPadala Durga Prasadu · Reg: 9921004520`},
+  {id:'TL', label:'translate EN→TE', l1:'TEXT', l2:'TRANSLATE', l3:'EN_TO_TE', c1:100, c2:93, c3:87, type:'text-type',
+   sig:{beta:2.52,alpha:2.34,theta:2.05,gamma:1.77},
+   code:`<span class="cm"># TEXT GENERATION — Translation</span>\n<span class="cm"># Intent: EN_TO_TE → LLM translation</span>\n\nInput:  "Hello, how are you?"\nOutput: "నమస్కారం, మీరు ఎలా ఉన్నారు?"\n\nInput:  "Brain Computer Interface"\nOutput: "మెదడు-కంప్యూటర్ ఇంటర్‌ఫేస్"\n\nInput:  "Artificial Intelligence"\nOutput: "కృత్రిమ మేధస్సు"`},
+  {id:'UI', label:'generate UI mockup', l1:'IMAGE', l2:'GENERATE', l3:'UI_MOCKUP', c1:100, c2:72, c3:66, type:'img-type',
+   sig:{beta:1.52,alpha:4.17,theta:1.24,gamma:1.44},
+   code:`<span class="cm"># IMAGE GENERATION — UI Mockup</span>\n<span class="cm"># Intent: UI_MOCKUP → image model</span>\n\nPrompt sent to DALL-E / Stable Diffusion:\n\n<span class="st">"Modern dashboard UI mockup,\n clean minimal design, dark theme,\n data visualization panels,\n professional SaaS interface,\n 4K resolution, Figma style"</span>\n\n<span class="cm">→ Image generated and displayed on screen</span>`},
+  {id:'AD', label:'architecture diagram', l1:'IMAGE', l2:'GENERATE', l3:'ARCHITECTURE_DIAGRAM', c1:100, c2:77, c3:60, type:'img-type',
+   sig:{beta:1.51,alpha:4.17,theta:1.24,gamma:1.44},
+   code:`<span class="cm"># IMAGE GENERATION — Architecture Diagram</span>\n<span class="cm"># Intent: ARCHITECTURE_DIAGRAM → diagram model</span>\n\nPrompt:\n<span class="st">"System architecture diagram showing\n BCI signal pipeline:\n EEG Headset → ADS1299 → ESP32 →\n BLE 5.0 → Python → ML Classifier →\n Claude API → VS Code WebSocket →\n Code Output on Screen"</span>`},
+];
+
+const PIPE_STAGES = [
+  {num:'01', icon:'◉', name:'EEG capture'},
+  {num:'02', icon:'◈', name:'preprocessing'},
+  {num:'03', icon:'◆', name:'feature extract'},
+  {num:'04', icon:'▣', name:'L1 classify'},
+  {num:'05', icon:'▤', name:'L2→L3 classify'},
+  {num:'06', icon:'□', name:'LLM → output'},
+];
+
+const ARCH_LAYERS = [
+  {num:'01', name:'EEG Hardware Layer', tag:'HARDWARE', cls:'tag-hw',
+   chips:['ADS1299EEG-FE chip','ESP32-WROOM-32E','BLE 5.0 wireless','Dry Ag/AgCl electrodes','8 channels · 250Hz · 24-bit ADC']},
+  {num:'02', name:'Signal Preprocessing', tag:'DSP', cls:'tag-hw',
+   chips:['Butterworth bandpass 0.5–50Hz','ICA notch filter 50Hz','FastICA artifact removal','Hamming-windowed epoching 2s','250Hz → 22-feature vector']},
+  {num:'03', name:'Feature Extraction (31 features)', tag:'ML', cls:'tag-ml',
+   chips:['delta/theta/alpha/beta/gamma power','spectral entropy','Hjorth parameters','PLV inter-channel coherence','5 novel ratio features (session-invariant)']},
+  {num:'04', name:'Hierarchical Random Forest Classifier', tag:'AI MODEL', cls:'tag-ml',
+   chips:['L1: CODE/TEXT/IMAGE — 99.99%','L2: 14 categories — 73.54%','L3: 42 intents — 61.06%','200 trees · ensemble voting','Confidence threshold ≥ 65%']},
+  {num:'05', name:'LLM Code Generation', tag:'LLM', cls:'tag-ai',
+   chips:['Intent JSON → Claude API','Tokenization → code generation','Python executor sandbox','WebSocket → VS Code injection','Output displayed on screen']},
+];
+
+let selectedIntent = INTENTS[0];
+let running = false;
+
+function buildIntentGrid(){
+  const g = document.getElementById('intentGrid');
+  INTENTS.forEach((t,i) => {
+    const d = document.createElement('div');
+    d.className = `intent-card ${t.type}${i===0?' selected':''}`;
+    d.innerHTML = `<div class="intent-type-tag">${t.l1}</div><div class="intent-name">${t.label}</div>`;
+    d.onclick = () => {
+      document.querySelectorAll('.intent-card').forEach(c => c.classList.remove('selected'));
+      d.classList.add('selected');
+      selectedIntent = t;
+      resetDemo();
+    };
+    g.appendChild(d);
+  });
+}
+
+function buildPipeStages(){
+  const ps = document.getElementById('pipeSteps');
+  PIPE_STAGES.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'pipe-step';
+    d.innerHTML = `<div class="pipe-step-num">${s.num}</div><div class="pipe-step-icon">${s.icon}</div><div class="pipe-step-name">${s.name}</div>`;
+    ps.appendChild(d);
+  });
+}
+
+function buildSignalRow(){
+  const sr = document.getElementById('signalRow');
+  [['beta power','#ff6b6b','13–30Hz'],[' alpha power','#c792ea','8–13Hz'],
+   ['theta power','#38e8c0','4–8Hz'],['gamma power','#ffcb6b','30–100Hz']].forEach(([n,c,f],i)=>{
+    const d = document.createElement('div');
+    d.className = 'signal-card';
+    d.innerHTML = `<div class="signal-card-header"><span class="signal-name">${n.trim()}</span><span class="signal-val" id="sv${i}" style="color:${c};">—</span></div>
+    <canvas class="signal-canvas" id="sc${i}" height="36"></canvas>
+    <div class="signal-band">${f}</div>`;
+    sr.appendChild(d);
+  });
+}
+
+function buildArchFlow(){
+  const af = document.getElementById('archFlow');
+  ARCH_LAYERS.forEach((l,i) => {
+    const d = document.createElement('div');
+    d.className = 'arch-layer';
+    d.innerHTML = `<div class="arch-layer-header">
+      <span class="arch-layer-num">${l.num}</span>
+      <span class="arch-layer-name">${l.name}</span>
+      <span class="arch-layer-tag ${l.cls}">${l.tag}</span>
+    </div>
+    <div class="arch-layer-body">${l.chips.map(c=>`<span class="arch-chip">${c}</span>`).join('')}</div>`;
+    af.appendChild(d);
+    if(i < ARCH_LAYERS.length-1){
+      const a = document.createElement('div');
+      a.className='arch-arrow'; a.textContent='↓'; af.appendChild(a);
+    }
+  });
+}
+
+function resetDemo(){
+  document.querySelectorAll('.pipe-step').forEach(s => s.className='pipe-step');
+  document.getElementById('progFill').style.width='0%';
+  document.getElementById('pipeStatus').textContent='Ready — click RUN FULL PIPELINE';
+  ['cr1','cr2','cr3'].forEach(id => document.getElementById(id).textContent='—');
+  ['cf1','cf2','cf3'].forEach(id => document.getElementById(id).style.width='0%');
+  ['cl1','cl2','cl3'].forEach(id => document.getElementById(id).textContent='awaiting signal');
+  ['cc1','cc2','cc3'].forEach((id,i)=>{ document.getElementById(id).className=`class-card`; });
+  document.getElementById('codeBody').innerHTML=`<span class="cm"># SynapLink output will appear here\n# Pipeline ready</span>`;
+  document.getElementById('outTitle').textContent='synaplink_output.py — ready';
+  document.getElementById('outLatency').textContent='';
+  [0,1,2,3].forEach(i=>{ const sv=document.getElementById('sv'+i); if(sv)sv.textContent='—'; });
+}
+
+function drawWave(id, val, color, noisy){
+  const c = document.getElementById(id); if(!c)return;
+  const ctx = c.getContext('2d');
+  const w = c.offsetWidth || 200; c.width = w; c.height = 36;
+  ctx.clearRect(0,0,w,36);
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.beginPath();
+  for(let x=0;x<w;x++){
+    const n = noisy?(Math.random()-0.5)*4:0;
+    const y = 18 + Math.sin(x*val*0.09)*Math.min(val*2.5,14) + n;
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function drawLiveWave(){
+  const c = document.getElementById('liveWave'); if(!c)return;
+  const w = c.offsetWidth||340; c.width=w; c.height=80;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,w,80);
+  const colors = ['#6384ff','#38e8c0','#ff6b6b','#c792ea','#ffcb6b','#f78c6c','#82aaff','#38e8c0'];
+  const t = Date.now()/1000;
+  colors.forEach((col,ch)=>{
+    ctx.strokeStyle=col; ctx.lineWidth=1; ctx.globalAlpha=0.6; ctx.beginPath();
+    const baseY = 10 + ch*8.5;
+    for(let x=0;x<w;x++){
+      const y = baseY + Math.sin(x*0.04+t*(1+ch*0.3)+ch)*3 + (Math.random()-0.5)*0.5;
+      x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  });
+  ctx.globalAlpha=1;
+}
+
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+async function animFill(from,to,dur){
+  const fill=document.getElementById('progFill');
+  const steps=20; const dt=dur/steps;
+  for(let i=0;i<=steps;i++){
+    fill.style.width=(from+(to-from)*i/steps).toFixed(1)+'%';
+    await sleep(dt);
+  }
+}
+
+async function runPipeline(){
+  if(running)return;
+  running=true;
+  const t=selectedIntent;
+  document.getElementById('runBtn').disabled=true;
+  const stages=document.querySelectorAll('.pipe-step');
+  const t0=Date.now();
+
+  const statusMsgs=[
+    `ADS1299 capturing 8-channel EEG at 250Hz — subject thinking: "${t.label}"`,
+    `Butterworth bandpass 0.5–50Hz → Notch 50Hz → FastICA artifact removal`,
+    `Extracting 31 features — beta=${t.sig.beta.toFixed(2)} alpha=${t.sig.alpha.toFixed(2)} theta=${t.sig.theta.toFixed(2)}`,
+    `L1 Random Forest: ${t.l1} — ${t.c1}% confidence`,
+    `L2: ${t.l2} (${t.c2}%) → L3: ${t.l3} (${t.c3}%) — intent confirmed`,
+    `Intent "${t.l3}" → Claude API → tokenizing → generating output`,
+  ];
+
+  const sigColors=['#ff6b6b','#c792ea','#38e8c0','#ffcb6b'];
+  const sigVals=[t.sig.beta,t.sig.alpha,t.sig.theta,t.sig.gamma];
+
+  for(let s=0;s<6;s++){
+    stages[s].className='pipe-step active';
+    document.getElementById('pipeStatus').textContent=statusMsgs[s];
+    await animFill(s*16.67,(s+1)*16.67,260);
+
+    if(s===0){
+      sigVals.forEach((v,i)=>{ drawWave('sc'+i,v,sigColors[i],true); document.getElementById('sv'+i).textContent=v.toFixed(2)+' µV²'; });
+    }
+    if(s===1){
+      sigVals.forEach((v,i)=>drawWave('sc'+i,v,sigColors[i],false));
+    }
+    if(s===3){
+      document.getElementById('cc1').className='class-card l1-done';
+      document.getElementById('cr1').textContent=t.l1;
+      document.getElementById('cf1').style.width=t.c1+'%';
+      document.getElementById('cl1').textContent=t.c1+'% confidence';
+    }
+    if(s===4){
+      document.getElementById('cc2').className='class-card l2-done';
+      document.getElementById('cr2').textContent=t.l2.replace(/_/g,' ');
+      document.getElementById('cf2').style.width=t.c2+'%';
+      document.getElementById('cl2').textContent=t.c2+'% confidence';
+      await sleep(150);
+      document.getElementById('cc3').className='class-card l3-done';
+      document.getElementById('cr3').textContent=t.l3.replace(/_/g,' ');
+      document.getElementById('cf3').style.width=t.c3+'%';
+      document.getElementById('cl3').textContent=t.c3+'% confidence';
+    }
+    if(s===5){
+      document.getElementById('outTitle').textContent=`synaplink_output.py — generating ${t.l3}`;
+    }
+    await sleep(300);
+    stages[s].className='pipe-step done';
+  }
+
+  const elapsed=((Date.now()-t0)/1000).toFixed(2);
+  document.getElementById('outLatency').textContent=`${elapsed}s`;
+  document.getElementById('pipeStatus').textContent=`Pipeline complete — ${t.l3} generated in ${elapsed}s ✓`;
+  document.getElementById('outTitle').textContent=`synaplink_output.py — ${t.l3}`;
+  document.getElementById('codeBody').innerHTML=t.code;
+
+  running=false;
+  document.getElementById('runBtn').disabled=false;
+}
+
+function showSection(id, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+buildIntentGrid();
+buildPipeStages();
+buildSignalRow();
+buildArchFlow();
+resetDemo();
+
+setInterval(drawLiveWave, 80);
+</script>
+</body>
+</html>
