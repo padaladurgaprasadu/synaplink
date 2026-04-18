@@ -8,7 +8,7 @@ import pandas as pd
 from flask import Flask, render_template_string, request, jsonify
 from google import genai
 
-GEMINI_API_KEY = "your api key"  # paste your key here
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 DATASET_PATH   = "synaplink_real_eeg_dataset.csv"
 MODELS_DIR     = "synaplink_models"
 
