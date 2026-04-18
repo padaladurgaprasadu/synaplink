@@ -2,14 +2,14 @@
 SynapLink - Brain-to-Code Pipeline v2
 No intent buttons - random signal from dataset - show classified intents
 """
+import os
 import random, pickle
 import numpy as np
 import pandas as pd
-import os
 from flask import Flask, render_template_string, request, jsonify
 from google import genai
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 DATASET_PATH   = "synaplink_real_eeg_dataset.csv"
 MODELS_DIR     = "synaplink_models"
 
