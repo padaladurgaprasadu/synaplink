@@ -6,12 +6,6 @@
 
 *No keyboard. No voice. Just your brain.*
 
-[![IEEE](https://img.shields.io/badge/IEEE-ICIRCA--2025-blue?style=flat-square)](https://ieee.org)
-[![Python](https://img.shields.io/badge/Python-3.11-green?style=flat-square&logo=python)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.x-lightgrey?style=flat-square&logo=flask)](https://flask.palletsprojects.com)
-[![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-orange?style=flat-square&logo=google)](https://ai.google.dev)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
-
 </div>
 
 ---
