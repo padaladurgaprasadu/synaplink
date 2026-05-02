@@ -18,10 +18,9 @@
 2. 🤖 **Classifies** cognitive intent across **42 programming and content tasks**
 3. ⚡ **Generates** executable Python code, text, or image prompts via **Google Gemini AI**
 4. 🖥️ **Displays** the output on screen in **1.21 seconds** — end to end
+5. This is semantic demo with augmented EEG brain signals
 
 > Built as an independent research project by **Padala Durga Prasadu** (B.Tech CSE AI/ML, KARE 2025)  
-> Under the guidance of **Dr. P. Deepalakshmi**, Dean, School of Computing, KARE  
-> Research paper submitted to **IEEE ICIRCA-2025**
 
 ---
 
