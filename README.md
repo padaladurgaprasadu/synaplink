@@ -113,7 +113,7 @@ cd SynapLink-BCI
 python synaplink_pipeline_v2.py
 ```
 
-Open browser: **http://localhost:5000**
+Open browser: **https://synaplink-bci.onrender.com/**
 
 Click **🧠 RUN BRAIN-TO-CODE PIPELINE** → Watch it classify brain intent and generate code!
 
